@@ -3,15 +3,18 @@
   font-weight: 400;
   font-style: normal;
 }
+html {
+  background-image: url('../images/bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: repeat;
+  background-attachment: fixed; 
+  height: 100%;
+}
 body {
-  background-image: url('../images/bg.png'); /* update with the correct path */
-  background-size: cover; /* ensures the image scales to fill the screen */
-  background-position: center; /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-  background-attachment: fixed; /* optional: keeps the background static during scroll */
-  margin: 0; /* removes default body margin for a cleaner look */
-  height: 100vh; /* ensures the body takes up the full height of the viewport */
-  width: 100vw; /* ensures the body takes up the full width of the viewport */
+  margin: 60px auto; 
+  width: 70%;
+  background-color: transparent; 
 }
 nav ul, footer ul {
     font-family:"Helvetica Neue", 'Helvetica', 'Arial', 'Sans-Serif';
