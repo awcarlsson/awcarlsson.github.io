@@ -48,10 +48,12 @@ h1 {
     color: #3369b5;
 }
 p {
-    font-size: 1.5em;
-    font-family: "Helvetica Neue", 'Helvetica', 'Arial', 'Sans-Serif';
-    line-height: 1.4em;
-    color: #621f19;
+  font-size: 1.5em;
+  font-family: "Helvetica Neue", 'Helvetica', 'Arial', 'Sans-Serif';
+  line-height: 1.4em;
+  color: #621f19;
+  font-weight: bold;
+  text-shadow: 2px 2px 5px rgba(24, 16, 16, 0.8);
 }
 footer {
     border-top: 1px solid white;
