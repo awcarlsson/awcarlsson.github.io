@@ -1,6 +1,6 @@
 function setup() {
 
-    var canvas = document.getElementById('p5')
+    var canvas = document.getElementById('mystictree')
 	var context = canvas.getContext('2d')
 	
     var slider1 = document.getElementById('slider1')
