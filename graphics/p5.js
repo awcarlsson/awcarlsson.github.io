@@ -35,7 +35,7 @@ function setup() {
 
 		function drawTree(Tx, height, numBranches) {
 			
-			context.strokeStyle = "#1c6115"
+			context.strokeStyle = "#6fba66"
 			context.beginPath()
 			context.lineWidth = 6
 			context.lineCap = "round"
