@@ -27,7 +27,7 @@ function setup() {
 		{var res=vec3.create(); vec3.transformMat4(res,loc,Tx); context.lineTo(res[0],res[1]);}
 
 		function drawFloor(Tx) {
-			context.fillStyle = "#79b0fc"
+			context.fillStyle = "#3369b5"
 			context.fillRect(0, 0, canvas.width, canvas.height)
 			context.fillStyle = "#ccbf85"
 			context.fillRect(0, canvas.height/3, canvas.width, canvas.height)
