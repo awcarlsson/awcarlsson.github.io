@@ -4,7 +4,7 @@
   font-style: normal;
 }
 body {
-  background-image: url('/images/bg.png'); /* update with the correct path */
+  background-image: url('../images/bg.png'); /* update with the correct path */
   background-size: cover; /* ensures the image scales to fill the screen */
   background-position: center; /* centers the image */
   background-repeat: no-repeat; /* prevents tiling */
