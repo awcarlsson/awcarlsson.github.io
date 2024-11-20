@@ -49,9 +49,9 @@ h1 {
 }
 p {
     font-size: 1.5em;
-    font-family:"Helvetica Neue", 'Helvetica', 'Arial', 'Sans-Serif';
+    font-family:"Days One", "Helvetica Neue", 'Helvetica', 'Arial', 'Sans-Serif';
     line-height: 1.4em;
-    color: white;
+    color: #621f19;
 }
 footer {
     border-top: 1px solid white;
