@@ -3,11 +3,21 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% assign canonical_url = page.url | absolute_url %}
     <title>{% if page.title %}{{ page.title }} | Anders Carlsson{% else %}Anders Carlsson{% endif %}</title>
     <meta
       name="description"
       content="{% if page.description %}{{ page.description }}{% else %}Software engineer in Seattle building thoughtful products and playful web experiments.{% endif %}"
     >
+    <link rel="canonical" href="{{ canonical_url }}">
+    <meta property="og:site_name" content="Anders Carlsson">
+    <meta property="og:title" content="{% if page.title %}{{ page.title }} | Anders Carlsson{% else %}Anders Carlsson{% endif %}">
+    <meta property="og:description" content="{% if page.description %}{{ page.description }}{% else %}Software engineer in Seattle building thoughtful products and playful web experiments.{% endif %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{% if page.title %}{{ page.title }} | Anders Carlsson{% else %}Anders Carlsson{% endif %}">
+    <meta name="twitter:description" content="{% if page.description %}{{ page.description }}{% else %}Software engineer in Seattle building thoughtful products and playful web experiments.{% endif %}">
     <meta name="theme-color" content="#0b0e14">
     <link rel="icon" href="/favicon.ico?v=1" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=1">

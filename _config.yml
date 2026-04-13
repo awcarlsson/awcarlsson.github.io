@@ -1,3 +1,5 @@
 name: Anders Carlsson
+url: https://anderscarlsson.com
+baseurl: ""
 markdown: kramdown
 permalink: /blog/:year/:month/:day/:title
