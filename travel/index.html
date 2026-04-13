@@ -22,67 +22,149 @@ description: Countries Anders Carlsson has traveled to.
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script>
   (() => {
+    const regionOrder = ["North America", "Caribbean", "South America", "Europe", "Asia", "Oceania"];
+    const markerCountries = {
+      LCA: { coordinates: [-60.9789, 13.9094], scale: 5.2 }
+    };
     const visitedCountries = [
-      { code: "BEL", name: "Belgium" },
-      { code: "CAN", name: "Canada" },
-      { code: "DNK", name: "Denmark" },
-      { code: "ECU", name: "Ecuador" },
-      { code: "FRA", name: "France" },
-      { code: "DEU", name: "Germany" },
-      { code: "GRC", name: "Greece" },
-      { code: "ISL", name: "Iceland" },
-      { code: "ITA", name: "Italy" },
-      { code: "JPN", name: "Japan" },
-      { code: "MEX", name: "Mexico" },
-      { code: "NLD", name: "Netherlands" },
-      { code: "NZL", name: "New Zealand" },
-      { code: "NOR", name: "Norway" },
-      { code: "PER", name: "Peru" },
-      { code: "LCA", name: "Saint Lucia" },
-      { code: "ESP", name: "Spain" },
-      { code: "SWE", name: "Sweden" },
-      { code: "USA", name: "United States" },
-      { code: "GBR", name: "United Kingdom" }
+      { code: "BEL", name: "Belgium", region: "Europe" },
+      { code: "CAN", name: "Canada", region: "North America" },
+      { code: "DNK", name: "Denmark", region: "Europe" },
+      { code: "ECU", name: "Ecuador", region: "South America" },
+      { code: "FRA", name: "France", region: "Europe" },
+      { code: "DEU", name: "Germany", region: "Europe" },
+      { code: "GRC", name: "Greece", region: "Europe" },
+      { code: "ISL", name: "Iceland", region: "Europe" },
+      { code: "ITA", name: "Italy", region: "Europe" },
+      { code: "JPN", name: "Japan", region: "Asia" },
+      { code: "MEX", name: "Mexico", region: "North America" },
+      { code: "NLD", name: "Netherlands", region: "Europe" },
+      { code: "NZL", name: "New Zealand", region: "Oceania" },
+      { code: "NOR", name: "Norway", region: "Europe" },
+      { code: "PER", name: "Peru", region: "South America" },
+      { code: "LCA", name: "Saint Lucia", region: "Caribbean" },
+      { code: "ESP", name: "Spain", region: "Europe" },
+      { code: "SWE", name: "Sweden", region: "Europe" },
+      { code: "USA", name: "United States", region: "North America" },
+      { code: "GBR", name: "United Kingdom", region: "Europe" }
     ];
 
-    const visitedMap = new Map(visitedCountries.map((country) => [country.code, country.name]));
+    const visitedMap = new Map(visitedCountries.map((country) => [country.code, country]));
     const listRoot = document.getElementById("travel-list");
     const tooltip = document.getElementById("travel-tooltip");
     const svg = d3.select("#travel-map");
     const width = 960;
     const height = 540;
+    let hoveredCode = null;
+    let selectedCode = null;
+    let countryFeatures = [];
+    let countryFeatureMap = new Map();
+    let mapGroup = null;
+    let countryLayer = null;
+    let projection = null;
+    let path = null;
 
-    visitedCountries.forEach((country) => {
-      const button = document.createElement("button");
-      button.className = "travel-pill";
-      button.type = "button";
-      button.dataset.code = country.code;
-      button.textContent = country.name;
-      listRoot.appendChild(button);
+    regionOrder.forEach((region) => {
+      const regionCountries = visitedCountries.filter((country) => country.region === region);
+      if (!regionCountries.length) return;
+
+      const section = document.createElement("section");
+      section.className = "travel-region";
+
+      const heading = document.createElement("h3");
+      heading.className = "travel-region-title";
+      heading.textContent = region;
+      section.appendChild(heading);
+
+      const row = document.createElement("div");
+      row.className = "travel-region-list";
+
+      regionCountries.forEach((country) => {
+        const button = document.createElement("button");
+        button.className = "travel-pill";
+        button.type = "button";
+        button.dataset.code = country.code;
+        button.textContent = country.name;
+        row.appendChild(button);
+      });
+
+      section.appendChild(row);
+      listRoot.appendChild(section);
     });
 
     const pillMap = new Map(
       Array.from(document.querySelectorAll(".travel-pill")).map((button) => [button.dataset.code, button])
     );
 
-    const setActive = (code) => {
-      document.querySelectorAll(".travel-pill, .travel-country").forEach((node) => {
-        node.classList.remove("is-active");
+    const renderState = () => {
+      document.querySelectorAll(".travel-pill").forEach((node) => {
+        node.classList.toggle("is-hovered", node.dataset.code === hoveredCode);
+        node.classList.toggle("is-selected", node.dataset.code === selectedCode);
       });
 
-      if (!code) return;
+      document.querySelectorAll(".travel-country, .travel-marker").forEach((node) => {
+        const code = node.dataset.code;
+        node.classList.toggle("is-hovered", code === hoveredCode);
+        node.classList.toggle("is-selected", code === selectedCode);
+      });
+    };
 
-      const pill = pillMap.get(code);
-      if (pill) pill.classList.add("is-active");
+    const resetZoom = () => {
+      if (!mapGroup) return;
 
-      const countryPath = document.querySelector(`.travel-country[data-code="${code}"]`);
-      if (countryPath) countryPath.classList.add("is-active");
+      mapGroup
+        .transition()
+        .duration(700)
+        .ease(d3.easeCubicOut)
+        .attr("transform", "translate(0,0) scale(1)");
+    };
+
+    const focusCountry = (code) => {
+      selectedCode = code;
+      renderState();
+
+      if (!code || !countryLayer) {
+        resetZoom();
+        return;
+      }
+
+      if (markerCountries[code] && projection) {
+        const [x, y] = projection(markerCountries[code].coordinates);
+        const scale = markerCountries[code].scale || 5;
+        const translateX = width / 2 - scale * x;
+        const translateY = height / 2 - scale * y;
+
+        mapGroup
+          .transition()
+          .duration(700)
+          .ease(d3.easeCubicOut)
+          .attr("transform", `translate(${translateX},${translateY}) scale(${scale})`);
+        return;
+      }
+
+      const feature = countryFeatureMap.get(code);
+      if (!feature) return;
+
+      const [[x0, y0], [x1, y1]] = path.bounds(feature);
+      const dx = x1 - x0;
+      const dy = y1 - y0;
+      const x = (x0 + x1) / 2;
+      const y = (y0 + y1) / 2;
+      const scale = Math.max(1, Math.min(4.5, 0.72 / Math.max(dx / width, dy / height)));
+      const translateX = width / 2 - scale * x;
+      const translateY = height / 2 - scale * y;
+
+      mapGroup
+        .transition()
+        .duration(700)
+        .ease(d3.easeCubicOut)
+        .attr("transform", `translate(${translateX},${translateY}) scale(${scale})`);
     };
 
     const showTooltip = (event, label) => {
       tooltip.hidden = false;
       tooltip.textContent = label;
-      const bounds = event.currentTarget.closest(".travel-map-wrap").getBoundingClientRect();
+      const bounds = document.querySelector(".travel-map-wrap").getBoundingClientRect();
       tooltip.style.left = `${event.clientX - bounds.left + 14}px`;
       tooltip.style.top = `${event.clientY - bounds.top + 14}px`;
     };
@@ -93,48 +175,118 @@ description: Countries Anders Carlsson has traveled to.
 
     document.querySelectorAll(".travel-pill").forEach((button) => {
       const code = button.dataset.code;
+      const label = visitedMap.get(code).name;
 
-      button.addEventListener("mouseenter", () => setActive(code));
-      button.addEventListener("focus", () => setActive(code));
-      button.addEventListener("mouseleave", () => setActive(null));
-      button.addEventListener("blur", () => setActive(null));
-      button.addEventListener("click", () => setActive(code));
+      button.addEventListener("mouseenter", (event) => {
+        hoveredCode = code;
+        renderState();
+        showTooltip(event, label);
+      });
+      button.addEventListener("focus", () => {
+        hoveredCode = code;
+        renderState();
+      });
+      button.addEventListener("mousemove", (event) => showTooltip(event, label));
+      button.addEventListener("mouseleave", () => {
+        hoveredCode = null;
+        renderState();
+        hideTooltip();
+      });
+      button.addEventListener("blur", () => {
+        hoveredCode = null;
+        renderState();
+        hideTooltip();
+      });
+      button.addEventListener("click", () => {
+        focusCountry(selectedCode === code ? null : code);
+      });
     });
 
     fetch("https://cdn.jsdelivr.net/npm/visionscarto-world-atlas@0.1.0/world/110m.json")
       .then((response) => response.json())
       .then((world) => {
-        const countries = topojson.feature(world, world.objects.countries).features;
-        const projection = d3.geoNaturalEarth1().fitExtent([[20, 20], [width - 20, height - 20]], { type: "Sphere" });
-        const path = d3.geoPath(projection);
+        countryFeatures = topojson.feature(world, world.objects.countries).features.filter((feature) => feature.properties.a3 !== "ATA");
+        countryFeatureMap = new Map(countryFeatures.map((feature) => [feature.properties.a3, feature]));
+        projection = d3.geoNaturalEarth1().fitExtent([[20, 20], [width - 20, height - 20]], { type: "Sphere" });
+        path = d3.geoPath(projection);
 
-        svg.append("path")
+        svg.on("click", (event) => {
+          if (event.target === svg.node()) {
+            focusCountry(null);
+            hideTooltip();
+          }
+        });
+
+        mapGroup = svg.append("g");
+
+        mapGroup.append("path")
           .datum({ type: "Sphere" })
           .attr("class", "travel-sphere")
           .attr("d", path);
 
-        svg.append("g")
+        countryLayer = mapGroup.append("g")
           .selectAll("path")
-          .data(countries.filter((feature) => feature.properties.a3 !== "ATA"))
+          .data(countryFeatures)
           .join("path")
           .attr("class", (feature) => visitedMap.has(feature.properties.a3) ? "travel-country is-visited" : "travel-country")
           .attr("data-code", (feature) => feature.properties.a3)
           .attr("d", path)
           .on("mouseenter", function(event, feature) {
             const code = feature.properties.a3;
-            const label = visitedMap.get(code) || feature.properties.name;
-            setActive(code);
+            const label = (visitedMap.get(code) || feature.properties).name;
+            hoveredCode = code;
+            renderState();
             showTooltip(event, label);
           })
           .on("mousemove", function(event, feature) {
             const code = feature.properties.a3;
-            const label = visitedMap.get(code) || feature.properties.name;
+            const label = (visitedMap.get(code) || feature.properties).name;
             showTooltip(event, label);
           })
+          .on("click", function(event, feature) {
+            const code = feature.properties.a3;
+            if (!visitedMap.has(code)) {
+              focusCountry(null);
+              return;
+            }
+
+            focusCountry(selectedCode === code ? null : code);
+          })
           .on("mouseleave", function() {
-            setActive(null);
+            hoveredCode = null;
+            renderState();
             hideTooltip();
           });
+
+        mapGroup.append("g")
+          .selectAll("circle")
+          .data(Object.entries(markerCountries))
+          .join("circle")
+          .attr("class", "travel-marker is-visited")
+          .attr("data-code", ([code]) => code)
+          .attr("r", 4.5)
+          .attr("cx", ([, config]) => projection(config.coordinates)[0])
+          .attr("cy", ([, config]) => projection(config.coordinates)[1])
+          .on("mouseenter", function(event, [code]) {
+            const label = visitedMap.get(code).name;
+            hoveredCode = code;
+            renderState();
+            showTooltip(event, label);
+          })
+          .on("mousemove", function(event, [code]) {
+            const label = visitedMap.get(code).name;
+            showTooltip(event, label);
+          })
+          .on("click", function(event, [code]) {
+            focusCountry(selectedCode === code ? null : code);
+          })
+          .on("mouseleave", function() {
+            hoveredCode = null;
+            renderState();
+            hideTooltip();
+          });
+
+        renderState();
       })
       .catch(() => {
         svg.append("text")
