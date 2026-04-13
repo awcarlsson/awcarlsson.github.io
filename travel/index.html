@@ -1,0 +1,148 @@
+---
+layout: default
+title: Travel
+description: Countries Anders Carlsson has traveled to.
+---
+<section class="section-block travel-layout">
+  <div class="travel-map-wrap">
+    <div class="travel-meta">
+      <p class="travel-count">Tracking the countries I have visited so far.</p>
+    </div>
+    <svg id="travel-map" class="travel-map" viewBox="0 0 960 540" role="img" aria-label="World map of countries Anders Carlsson has traveled to"></svg>
+    <div id="travel-tooltip" class="travel-tooltip" hidden></div>
+  </div>
+
+  <aside class="travel-sidebar">
+    <h2>Visited</h2>
+    <div id="travel-list" class="travel-list" aria-label="Visited countries"></div>
+  </aside>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+  (() => {
+    const visitedCountries = [
+      { code: "BEL", name: "Belgium" },
+      { code: "CAN", name: "Canada" },
+      { code: "DNK", name: "Denmark" },
+      { code: "ECU", name: "Ecuador" },
+      { code: "FRA", name: "France" },
+      { code: "DEU", name: "Germany" },
+      { code: "GRC", name: "Greece" },
+      { code: "ISL", name: "Iceland" },
+      { code: "ITA", name: "Italy" },
+      { code: "JPN", name: "Japan" },
+      { code: "MEX", name: "Mexico" },
+      { code: "NLD", name: "Netherlands" },
+      { code: "NZL", name: "New Zealand" },
+      { code: "NOR", name: "Norway" },
+      { code: "PER", name: "Peru" },
+      { code: "LCA", name: "Saint Lucia" },
+      { code: "ESP", name: "Spain" },
+      { code: "SWE", name: "Sweden" },
+      { code: "USA", name: "United States" },
+      { code: "GBR", name: "United Kingdom" }
+    ];
+
+    const visitedMap = new Map(visitedCountries.map((country) => [country.code, country.name]));
+    const listRoot = document.getElementById("travel-list");
+    const tooltip = document.getElementById("travel-tooltip");
+    const svg = d3.select("#travel-map");
+    const width = 960;
+    const height = 540;
+
+    visitedCountries.forEach((country) => {
+      const button = document.createElement("button");
+      button.className = "travel-pill";
+      button.type = "button";
+      button.dataset.code = country.code;
+      button.textContent = country.name;
+      listRoot.appendChild(button);
+    });
+
+    const pillMap = new Map(
+      Array.from(document.querySelectorAll(".travel-pill")).map((button) => [button.dataset.code, button])
+    );
+
+    const setActive = (code) => {
+      document.querySelectorAll(".travel-pill, .travel-country").forEach((node) => {
+        node.classList.remove("is-active");
+      });
+
+      if (!code) return;
+
+      const pill = pillMap.get(code);
+      if (pill) pill.classList.add("is-active");
+
+      const countryPath = document.querySelector(`.travel-country[data-code="${code}"]`);
+      if (countryPath) countryPath.classList.add("is-active");
+    };
+
+    const showTooltip = (event, label) => {
+      tooltip.hidden = false;
+      tooltip.textContent = label;
+      const bounds = event.currentTarget.closest(".travel-map-wrap").getBoundingClientRect();
+      tooltip.style.left = `${event.clientX - bounds.left + 14}px`;
+      tooltip.style.top = `${event.clientY - bounds.top + 14}px`;
+    };
+
+    const hideTooltip = () => {
+      tooltip.hidden = true;
+    };
+
+    document.querySelectorAll(".travel-pill").forEach((button) => {
+      const code = button.dataset.code;
+
+      button.addEventListener("mouseenter", () => setActive(code));
+      button.addEventListener("focus", () => setActive(code));
+      button.addEventListener("mouseleave", () => setActive(null));
+      button.addEventListener("blur", () => setActive(null));
+      button.addEventListener("click", () => setActive(code));
+    });
+
+    fetch("https://cdn.jsdelivr.net/npm/visionscarto-world-atlas@0.1.0/world/110m.json")
+      .then((response) => response.json())
+      .then((world) => {
+        const countries = topojson.feature(world, world.objects.countries).features;
+        const projection = d3.geoNaturalEarth1().fitExtent([[20, 20], [width - 20, height - 20]], { type: "Sphere" });
+        const path = d3.geoPath(projection);
+
+        svg.append("path")
+          .datum({ type: "Sphere" })
+          .attr("class", "travel-sphere")
+          .attr("d", path);
+
+        svg.append("g")
+          .selectAll("path")
+          .data(countries.filter((feature) => feature.properties.a3 !== "ATA"))
+          .join("path")
+          .attr("class", (feature) => visitedMap.has(feature.properties.a3) ? "travel-country is-visited" : "travel-country")
+          .attr("data-code", (feature) => feature.properties.a3)
+          .attr("d", path)
+          .on("mouseenter", function(event, feature) {
+            const code = feature.properties.a3;
+            const label = visitedMap.get(code) || feature.properties.name;
+            setActive(code);
+            showTooltip(event, label);
+          })
+          .on("mousemove", function(event, feature) {
+            const code = feature.properties.a3;
+            const label = visitedMap.get(code) || feature.properties.name;
+            showTooltip(event, label);
+          })
+          .on("mouseleave", function() {
+            setActive(null);
+            hideTooltip();
+          });
+      })
+      .catch(() => {
+        svg.append("text")
+          .attr("class", "travel-map-fallback")
+          .attr("x", width / 2)
+          .attr("y", height / 2)
+          .attr("text-anchor", "middle")
+          .text("Map unavailable");
+      });
+  })();
+</script>

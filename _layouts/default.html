@@ -1,27 +1,44 @@
 <!DOCTYPE html>
-	<html>
-		<head>
-			<title>{{ page.title }}</title>
-			<link rel="preconnect" href="https://fonts.gstatic.com">
-			<link href="https://fonts.googleapis.com/css2?family=Spartan:wght@500&display=swap" rel="stylesheet">	
-			<!-- link to main stylesheet -->
-			<link rel="stylesheet" type="text/css" href="/css/main.css">
-		</head>
-		<body>
-			<nav>
-	    		<ul>
-					<li><a href="/">Home</a></li>
-					<li><a href="mailto:awcarlsson1@gmail.com">Email</a></li>
-					<li><a href="https://github.com/awcarlsson">Github</a></li>
-					<li><a href="https://www.linkedin.com/in/anders-carlsson/">LinkedIn</a></li>
-					<li><a href="https://www.instagram.com/an.ders/">Instagram</a></li>
-					<li><a href="/graphics">(~˘▾˘)~</a></li>
-	    		</ul>
-			</nav>
-			<div class="container">
-			
-			{{ content }}
-			
-			</div><!-- /.container -->
-		</body>
-	</html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page.title %}{{ page.title }} | Anders Carlsson{% else %}Anders Carlsson{% endif %}</title>
+    <meta
+      name="description"
+      content="{% if page.description %}{{ page.description }}{% else %}Software engineer in Seattle building thoughtful products and playful web experiments.{% endif %}"
+    >
+    <meta name="theme-color" content="#f5efe5">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bitcount+Single:wght@400&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="brand-block">
+          <div>
+            <a class="brand-name" href="/">Anders Carlsson</a>
+          </div>
+        </div>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="mailto:awcarlsson1@gmail.com">Email</a>
+          <a href="https://github.com/awcarlsson" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://www.linkedin.com/in/anders-carlsson/" target="_blank" rel="noreferrer">LinkedIn</a>
+          <a href="https://www.instagram.com/an.ders/" target="_blank" rel="noreferrer">Instagram</a>
+          <a href="/travel" aria-label="Travel">.ೃ࿔ ✈︎ *:･</a>
+          <a href="/graphics/mystictree.html">(~˘▾˘)~</a>
+        </nav>
+      </header>
+
+      <main class="page-content">
+        {{ content }}
+      </main>
+    </div>
+  </body>
+</html>
