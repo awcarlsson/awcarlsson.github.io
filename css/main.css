@@ -525,6 +525,11 @@ p {
 }
 
 .travel-country.is-hovered {
+  fill: rgba(238, 231, 220, 0.26);
+  stroke: rgba(255, 252, 247, 0.44);
+}
+
+.travel-country.is-visited.is-hovered {
   fill: rgba(101, 224, 143, 0.82);
   stroke: rgba(241, 251, 244, 0.78);
 }
