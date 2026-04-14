@@ -242,6 +242,25 @@ p {
   background: rgba(24, 27, 34, 0.78);
   font-size: 1rem;
   letter-spacing: 0.01em;
+  color: var(--text);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.location-chip:visited {
+  color: var(--text);
+}
+
+.location-chip:hover {
+  background: rgba(132, 214, 161, 0.1);
+  border-color: rgba(132, 214, 161, 0.26);
+  box-shadow: 0 0 0 0.14rem rgba(132, 214, 161, 0.08);
+  color: #a6edbf;
+  transform: translateY(-1px);
 }
 
 .location-chip::before {
@@ -251,6 +270,12 @@ p {
   border-radius: 50%;
   background: #24c45f;
   flex: 0 0 auto;
+  transition: box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.location-chip:hover::before {
+  background: #38d66d;
+  box-shadow: 0 0 0.45rem rgba(56, 214, 109, 0.45);
 }
 
 .hero-supporting {
@@ -259,6 +284,18 @@ p {
   font-weight: 600;
   line-height: 1.55;
   color: var(--text);
+}
+
+.hero-supporting a {
+  color: var(--accent-strong);
+  transition: text-shadow 160ms ease, color 160ms ease;
+}
+
+.hero-supporting a:hover {
+  color: #a6edbf;
+  text-shadow:
+    0 0 0.45rem rgba(166, 237, 191, 0.28),
+    0 0 1rem rgba(166, 237, 191, 0.16);
 }
 
 .hero-actions {
